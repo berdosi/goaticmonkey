@@ -1,0 +1,16 @@
+{
+  "title": "httAPI",
+  "name": "httapi",
+  "version": "0.0.1",
+  "description": "An addon providing a light HTTP-based API for Firefox",
+  "main": "index.js",
+  "author": "Balint Erdosi",
+  "engines": {
+    "firefox": ">=38.0a1",
+    "fennec": ">=38.0a1"
+  },
+  "license": "MIT",
+  "keywords": [
+    "jetpack"
+  ]
+}

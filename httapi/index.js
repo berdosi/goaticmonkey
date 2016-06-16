@@ -27,8 +27,10 @@ var listener = {
                     if(request != null && request.trim() != "") {
 
                         //Here is the message text
+						var allowedKeys = require('sdk/preferences/service').get(['extensions', require('sdk/self').id, 'keyStrings'].join('.'));					
 						request = JSON.parse(request);
                         console.log(request);
+						if (allowedKeys.indexOf(request.key + ";") != -1) {
 						tabs.open({
 							"url": request.url,
 							onReady:function(tab){
@@ -37,6 +39,7 @@ var listener = {
 									}
 								)
 							}})
+						}
                     }
                 }
                 catch(ex) { }           

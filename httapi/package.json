@@ -9,6 +9,11 @@
     "firefox": ">=38.0a1",
     "fennec": ">=38.0a1"
   },
+  "preferences": [{
+	  "name":"keyStrings",
+	  "title":"Key Strings",
+	  "description":"If you wish to allow an application to interact with Firefox, please add its key string here. Only do so for trusted applications. Make sure to separate key strings with semicolons, and add one at the end, too.","type":"string","value":""}
+  ],
   "license": "MIT",
   "keywords": [
     "jetpack"

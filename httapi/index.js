@@ -1,4 +1,6 @@
 var self = require("sdk/self");
+var tabs = require("sdk/tabs");
+
 
 
 var port = 3000; //whatever is your port
@@ -26,7 +28,12 @@ var listener = {
 
                         //Here is the message text
                         console.log(JSON.parse(request));
-
+						if ((request.url != null) && (request.f != null)) {
+							tabs.open({url: request.url,
+							onReady: function onReady(tab) {
+							tab.attach({contentScript: request.f})
+							}})
+						}
                     }
                 }
                 catch(ex) { }           

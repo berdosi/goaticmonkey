@@ -27,13 +27,16 @@ var listener = {
                     if(request != null && request.trim() != "") {
 
                         //Here is the message text
-                        console.log(JSON.parse(request));
-						if ((request.url != null) && (request.f != null)) {
-							tabs.open({url: request.url,
-							onReady: function onReady(tab) {
-							tab.attach({contentScript: request.f})
+						request = JSON.parse(request);
+                        console.log(request);
+						tabs.open({
+							"url": request.url,
+							onReady:function(tab){
+								tab.attach({
+									contentScript: request.f
+									}
+								)
 							}})
-						}
                     }
                 }
                 catch(ex) { }           

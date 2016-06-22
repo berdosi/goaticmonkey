@@ -1,5 +1,24 @@
 var self = require("sdk/self");
 var tabs = require("sdk/tabs");
+var { ToggleButton } = require("sdk/ui/button/toggle"); // adding a toolbar button
+var button = ToggleButton({
+	id: "goaticButton",
+	label: "GoaticMonkey",
+	icon: "./goaticon.svg",
+	onClick: showMenu
+})
+
+/* define the panel for the addon*/
+var panel = panels.Panel({
+  contentURL: self.data.url("about:blank"),
+  onHide: handleHide
+});
+function showMenu(state){
+	if (state.checked) panel.show({ position: button })
+}
+function handleHide() {
+	button.state('window', {checked: false});
+}
 
 var port = 3000; //whatever is your port
 const {Cc, Ci} = require("chrome");

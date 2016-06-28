@@ -26,10 +26,12 @@ function handleHide() {
 var port = 3000; //whatever is your port
 const {Cc, Ci} = require("chrome");
 var serverSocket = Cc["@mozilla.org/network/server-socket;1"].createInstance(Ci.nsIServerSocket);
+console.log("serversocket created",serverSocket)
 serverSocket.init(port, true, -1);
+console.log("serversocket initiated",serverSocket)
 var listener = {
 	onSocketAccepted: function(socket, transport) {
-		console.log(transport);
+		console.log("transport",transport,"socket",socket);
 		//if ((transport.host == "127.0.0.1") || (transport.host == "0:0:0:0:0:0:0:1") || (transport.host == "::1" )) { 
 			// only accept from localhost...g
 			var input = transport.openInputStream(Ci.nsITransport.OPEN_BLOCKING,0,0);
@@ -37,7 +39,9 @@ var listener = {
 			var tm = Cc["@mozilla.org/thread-manager;1"].getService();
 			input.asyncWait({
 				onInputStreamReady: function(inp) {
+				  console.log("input stream is ready");
 					try {
+									console.log("trying");
 						var sin = Cc["@mozilla.org/scriptableinputstream;1"].createInstance(Ci.nsIScriptableInputStream);
 						sin.init(inp);
 						sin.available();
@@ -82,6 +86,8 @@ var listener = {
 			}, 0, 0, tm.mainThread);
 		//}
 	},
-	onStopListening: function(socket, status) { }
+	onStopListening: function(socket, status) { console.log("stoplistening", socket, status); }
 };
+console.log("Listener ready: ", listener)
 serverSocket.asyncListen(listener);
+console.log("Addon is running.", serverSocket);

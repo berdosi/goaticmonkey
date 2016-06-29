@@ -1,7 +1,7 @@
 {
   "title": "GoaticMonkey",
   "name": "goaticmonkey",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An addon providing a light HTTP-based API for Firefox",
   "main": "index.js",
   "author": "Balint Erdosi",

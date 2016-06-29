@@ -1,13 +1,12 @@
 {
   "title": "GoaticMonkey",
   "name": "goaticmonkey",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "An addon providing a light HTTP-based API for Firefox",
   "main": "index.js",
   "author": "Balint Erdosi",
   "engines": {
-    "firefox": ">=38.0a1",
-    "fennec": ">=38.0a1"
+    "firefox": ">=38.0a1"
   },
   "preferences": [{
 	  "name":"keyStrings",
@@ -18,6 +17,6 @@
   "keywords": [
     "jetpack"
   ],
-  "updateURL":"",
-  "updateLink":""
+  "updateURL":"https://raw.githubusercontent.com/numen/hacking-around/master/MANIFEST/goaticmonkey.rdf",
+  "updateLink":"https://github.com/numen/hacking-around/raw/master/xpi/goaticmonkey.xpi"
 }

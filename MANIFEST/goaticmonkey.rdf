@@ -5,26 +5,18 @@
             <Seq>
                 <li>
                     <Description>
-                          <em:version>0.0.4</em:version>
-
-                          <em:targetApplication>
-                            <Description>
-                              <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-                              <em:minVersion>38.0a1</em:minVersion>
-                              <em:maxVersion>*</em:maxVersion>
-                              <em:updateLink>https://github.com/numen/hacking-around/raw/master/xpi/goaticmonkey.xpi</em:updateLink>
-</Description>
-</em:targetApplication>
-
-
+							<em:version>0.0.4</em:version>
+							<em:targetApplication>
+								<Description>
+									<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+									<em:minVersion>38.0a1</em:minVersion>
+									<em:maxVersion>*</em:maxVersion>
+								<em:updateLink>https://github.com/numen/hacking-around/raw/master/xpi/goaticmonkey.xpi</em:updateLink>
+								</Description>
+							</em:targetApplication>
                     </Description>
-
                 </li>
-
             </Seq>
-
         </em:updates>
-
     </Description>
-
 </RDF>

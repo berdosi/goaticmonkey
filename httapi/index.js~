@@ -22,14 +22,11 @@ var panel = require("sdk/panel").Panel({
 var port = 3000; //whatever is your port
 const {Cc, Ci} = require("chrome");
 var serverSocket = Cc["@mozilla.org/network/server-socket;1"].createInstance(Ci.nsIServerSocket);
-console.log("serversocket created",serverSocket)
 serverSocket.init(port, true, -1);
 console.log("serversocket initiated",serverSocket)
 
 serverSocket.asyncListen({
 	onSocketAccepted: function(socket, transport) {
-		console.log("transport",transport,"socket",socket);
-
 			var input = transport.openInputStream(Ci.nsITransport.OPEN_BLOCKING,0,0);
 			var output = transport.openOutputStream(Ci.nsITransport.OPEN_BLOCKING, 0, 0);
 			var tm = Cc["@mozilla.org/thread-manager;1"].getService();
@@ -60,8 +57,7 @@ serverSocket.asyncListen({
 						sin.close();
 						input.close();
 						output.write("OKAY",4);
-						output.close();
-					
+						output.close();	
 				}
 			}, 0, 0, tm.mainThread);
 	},

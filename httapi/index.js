@@ -16,7 +16,7 @@ var button = ToggleButton({
 var panel = require("sdk/panel").Panel({
   contentURL: self.data.url("about:blank"),
   onHide: function() {
-	button.state('window', {checked: false});}
+		button.state('window', {checked: false});}
 });
 
 var port = 3000; //whatever is your port
@@ -27,40 +27,39 @@ console.log("serversocket initiated",serverSocket)
 
 serverSocket.asyncListen({
 	onSocketAccepted: function(socket, transport) {
-			var input = transport.openInputStream(Ci.nsITransport.OPEN_BLOCKING,0,0);
-			var output = transport.openOutputStream(Ci.nsITransport.OPEN_BLOCKING, 0, 0);
-			var tm = Cc["@mozilla.org/thread-manager;1"].getService();
-			input.asyncWait({
-				onInputStreamReady: function(inp) {
-					var sin = Cc["@mozilla.org/scriptableinputstream;1"].createInstance(Ci.nsIScriptableInputStream);
-					sin.init(inp);
-					sin.available();
+		var input = transport.openInputStream(Ci.nsITransport.OPEN_BLOCKING,0,0);
+		var output = transport.openOutputStream(Ci.nsITransport.OPEN_BLOCKING, 0, 0);
+		var tm = Cc["@mozilla.org/thread-manager;1"].getService();
+		input.asyncWait({
+			onInputStreamReady: function(inp) {
+				var sin = Cc["@mozilla.org/scriptableinputstream;1"].createInstance(Ci.nsIScriptableInputStream);
+				sin.init(inp);
+				sin.available();
 
-						var request = '';
-						while (sin.available()) { request = request + sin.read(5120); }
-						var reqObj = { type: null, info: [] };
-						if(request != null && request.trim() != "") {
-							var apiEndPoint, requestParams; // this is going to store the API endpoint we registered using an API script
-							let urlparams = request.split(" ");
-							switch (urlparams[0]) {
-								case "GET":
-									let requestURL = urls.URL("http://example.org" + urlparams[1]);
-									[apiEndPoint, request] = [requestURL.fileName, querystring.parse(requestURL.search.substring(1))];
-									break;
-								case "POST":
-									apiEndPoint = urls.URL("http://example.org" + urlparams[1]).fileName;
-									request = querystring.parse(request.split("\n").pop())
-									break;
-							}
-							console.log(apiEndPoint, request);
-						}
-						sin.close();
-						input.close();
-						output.write("OKAY",4);
-						output.close();	
+				var request = '';
+				while (sin.available()) request = request + sin.read(5120); 
+				var reqObj = { type: null, info: [] };
+				if(request != null && request.trim() != "") {
+					var apiEndPoint, requestParams; // this is going to store the API endpoint we registered using an API script
+					let urlparams = request.split(" ");
+					switch (urlparams[0]) {
+						case "GET":
+							let requestURL = urls.URL("http://example.org" + urlparams[1]);
+							[apiEndPoint, request] = [requestURL.fileName, querystring.parse(requestURL.search.substring(1))];
+							break;
+						case "POST":
+							apiEndPoint = urls.URL("http://example.org" + urlparams[1]).fileName;
+							request = querystring.parse(request.split("\n").pop())
+							break;
+					}
+					console.log(apiEndPoint, request);
 				}
-			}, 0, 0, tm.mainThread);
+				sin.close();
+				input.close();
+				output.write("OKAY",4);
+				output.close();	
+			}
+		}, 0, 0, tm.mainThread);
 	},
-	onStopListening: function(socket, status) { console.log("stoplistening", socket, status); }
+	onStopListening: function(socket, status) {  }
 });
-console.log("Addon is running.", serverSocket);

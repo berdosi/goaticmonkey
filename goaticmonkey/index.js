@@ -5,6 +5,8 @@ var tabs = require("sdk/tabs");
 var { indexedDB, IDBKeyRange } = require('sdk/indexed-db'); 
 var { ToggleButton } = require("sdk/ui/button/toggle"); // adding a toolbar button
 
+/* * USER INTERFACE * */
+
 var button = ToggleButton({
 	id: "goaticButton",
 	label: "GoaticMonkey",
@@ -21,7 +23,13 @@ var panel = require("sdk/panel").Panel({
   onHide: function() {
 		button.state('window', {checked: false});}
 });
-panel.on("show",function(){panel.port.emit("endpointList",endpointList())});
+//panel.on("show",function(){panel.port.emit("endpointList",endpointList())});
+
+panel.on("show",function(){
+	getItems(function(e){panel.port.emit("endpointList", e)})});
+
+
+/* * SOCKLISTEN * */
 
 var port = 2051; // This will be the next year of the Metal Goat, which is totally cool.
 const {Cc, Ci} = require("chrome");
@@ -110,6 +118,8 @@ function open(version) {
 	request.onerror = database.onerror;
 }
 
+open(1);
+
 function addEndpoint(endpoint) {
 	var db = database.db;
 	var trans = db.transaction(["endpoints"],"readwrite");
@@ -125,7 +135,7 @@ function addEndpoint(endpoint) {
 
 function getItems(callback) {
 	var trans = database.db.transaction(["endpoints"],"readwrite");
-	var store = trans.objectstore("endpoints");
+	var store = trans.objectStore("endpoints");
 	var items = new Array();
 
 	var keyRange = IDBKeyRange.lowerBound(0);

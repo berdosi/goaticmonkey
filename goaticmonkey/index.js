@@ -23,7 +23,7 @@ var panel = require("sdk/panel").Panel({
 });
 panel.on("show",function(){panel.port.emit("endpointList",endpointList())});
 
-var port = 3000; //whatever is your port
+var port = 2051; // This will be the next year of the Metal Goat, which is totally cool.
 const {Cc, Ci} = require("chrome");
 var serverSocket = Cc["@mozilla.org/network/server-socket;1"].createInstance(Ci.nsIServerSocket);
 serverSocket.init(port, true, -1);

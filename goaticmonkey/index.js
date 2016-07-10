@@ -72,9 +72,10 @@ serverSocket.asyncListen({
 });
 
 
-function apiList() {
+function endpointList() {
 	// this function is going to list the current state of installed APIs, and returns it (the settingspanel's content script will receive it)
 	// an API has : name, enabledState, userConfirmationNeededState
+	return "placeholder"
 
 }
 

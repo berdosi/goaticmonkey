@@ -89,8 +89,10 @@ function endpointList() {
 
 function processRequest(apiEndPoint, request) {
 	// when a new request arrives, this is going to call the function of apiEndpoint, and pass the requests' data.
-	// iz needs to check whether the endpoint is enabled, and check, if user confirmation is necessary.
-
+	// it needs to check whether the endpoint is enabled, and check, if user confirmation is necessary.
+	// the request should contain a "key" parameter - normally we should only allow to run requests from requestors 
+	// for which the key has been confirmed by the user. The key should be removed from the request before passing it to the endpoint
+	// apiEndPoint's callback mustn't be allowed to access the indexedDb (needs to be run in its own scope)
 }
 // TODO : callbacks to delete / disable / switchCOnfirmationSTate of endpoints
 
@@ -128,6 +130,7 @@ function addEndpoint(endpoint) {
 		"endpointName": endpoint.endpointName,
 		"enabled": true,
 		"confirmationRequired": true,
+		"allowedKeys": [],
 		"script": endpoint.script
 		});
 	request.onerror = database.onerror;

@@ -93,6 +93,7 @@ function processRequest(apiEndPoint, request) {
 	// the request should contain a "key" parameter - normally we should only allow to run requests from requestors 
 	// for which the key has been confirmed by the user. The key should be removed from the request before passing it to the endpoint
 	// apiEndPoint's callback mustn't be allowed to access the indexedDb (needs to be run in its own scope)
+	// request contains a url property - the place we are to navigate to.
 }
 // TODO : callbacks to delete / disable / switchCOnfirmationSTate of endpoints
 

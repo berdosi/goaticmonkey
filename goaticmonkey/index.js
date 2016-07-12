@@ -130,9 +130,13 @@ function addEndpoint(endpoint) {
 	var request = store.put({
 		"endpointName": endpoint.endpointName,
 		"enabled": true,
-		"confirmationRequired": true,
+		"confirmationRequired": true, // if there is a request, let the user decide if it is to be fulfilled
 		"allowedKeys": [],
-		"script": endpoint.script
+		"getEnabled": true, // for debugging only . we don't really want malicious links using our endpoints 
+		"postEnabled": true,
+		"invisibleEnabled": false, // not implemented yet : invisible apis will be able to function in the background
+		"script": endpoint.script,
+		
 		});
 	request.onerror = database.onerror;
 }

@@ -55,14 +55,17 @@ serverSocket.asyncListen({
 					if(request != null && request.trim() != "") {
 						var apiEndPoint, requestParams; // this is going to store the API endpoint we registered using an API script
 						let urlparams = request.split(" ");
+
 						switch (urlparams[0]) {
 							case "GET":
 								let requestURL = urls.URL("http://example.org" + urlparams[1]);
 								[apiEndPoint, request] = [requestURL.fileName, querystring.parse(requestURL.search.substring(1))];
+								request.method = "GET"
 								break;
 							case "POST":
 								apiEndPoint = urls.URL("http://example.org" + urlparams[1]).fileName;
 								request = querystring.parse(request.split("\n").pop())
+								request.method = "POST"
 								break;
 						}
 						console.log(apiEndPoint, request);
@@ -94,6 +97,26 @@ function processRequest(apiEndPoint, request) {
 	// for which the key has been confirmed by the user. The key should be removed from the request before passing it to the endpoint
 	// apiEndPoint's callback mustn't be allowed to access the indexedDb (needs to be run in its own scope)
 	// request contains a url property - the place we are to navigate to.
+	request.key = ""; // TODO : check if the key is valid 
+	if (true) { // todo : check for user confirmation, if necessary, and whether the request type is allowed  (in request.method)
+	getItems(function (e) {
+		for (item in endpointList) {
+			if (item.endpointName) {
+				tabs.open({
+					url: request.url, // TODO: check if the url is among the target URLs
+					onReady: function(tab) {
+						tab.attach({
+							contentScript: e.script, 
+							contentScriptOptions: request
+						});
+						
+				}})
+			}
+			
+		}
+	
+	})
+	}
 }
 // TODO : callbacks to delete / disable / switchCOnfirmationSTate of endpoints
 

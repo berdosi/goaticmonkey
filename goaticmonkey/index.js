@@ -109,7 +109,6 @@ function processRequest(apiEndPoint, request) {
 							contentScript: e.script, 
 							contentScriptOptions: request
 						});
-						
 				}})
 			}
 			

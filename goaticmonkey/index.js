@@ -2,11 +2,12 @@ var self = require("sdk/self");
 var querystring = require("sdk/querystring");
 var urls = require("sdk/url");
 var tabs = require("sdk/tabs");
-var { indexedDB, IDBKeyRange } = require('sdk/indexed-db'); 
-var { ToggleButton } = require("sdk/ui/button/toggle"); // adding a toolbar button
+var { indexedDB, IDBKeyRange } = require('sdk/indexed-db');
 
-/* * USER INTERFACE * */
+// adding a toolbar button
+ var { ToggleButton } = require("sdk/ui/button/toggle"); 
 
+ /* * BEGIN : BROWSER UI * */
 var button = ToggleButton({
 	id: "goaticButton",
 	label: "GoaticMonkey",
@@ -28,8 +29,9 @@ var panel = require("sdk/panel").Panel({
 panel.on("show",function(){
 	getItems(function(e){panel.port.emit("endpointList", e)})});
 
-
-/* * SOCKLISTEN * */
+/* * END : BROWSER UI * */
+	
+/* * BEGIN : SOCKLISTEN * */
 
 var port = 2051; // This will be the next year of the Metal Goat, which is totally cool.
 const {Cc, Ci} = require("chrome");
@@ -82,6 +84,7 @@ serverSocket.asyncListen({
 	onStopListening: function(socket, status) {  }
 });
 
+/* * END : SOCKLISTEN * */
 
 function endpointList() {
 	// this function is going to list the current state of installed APIs, and returns it (the settingspanel's content script will receive it)
@@ -134,7 +137,10 @@ function open(version) {
 	request.onupgradeneeded = function(e) {
 		var db = e.target.result;
 		e.target.transaction.onerror = database.onerror;
-		if (db.objectStoreNames.contains("endpoints")) db.deleteObjectStore("endpoints");
+		if (db.objectStoreNames.contains("endpoints")) 
+				db.deleteObjectStore("endpoints");	
+				// TODO : the database schema should be updated with 
+				// default values instead of, well, burning up it all. 
 		var store = db.createObjectStore("endpoints", {keyPath: "endpointName"});
 	};
 
@@ -158,13 +164,13 @@ function addEndpoint(endpoint) {
 		"postEnabled": true,
 		"invisibleEnabled": false, // not implemented yet : invisible apis will be able to function in the background
 		"script": endpoint.script,
-		
+		"allowedURLs": randomURLsFromSource(endpoint.script)
 		});
 	request.onerror = database.onerror;
 }
 
 function getItems(callback) {
-	var trans = database.db.transaction(["endpoints"],"readwrite");
+	var trans = database.db.transaction(["endpoints"]);
 	var store = trans.objectStore("endpoints");
 	var items = new Array();
 
@@ -183,4 +189,14 @@ function getItems(callback) {
 	trans.oncomplete = function() { callback(items); }
 }
 
+function getItem(item, callback) {
+	var trans = database.db.transaction(["endpoints"]);
+	var store = trans.objectStore("endpoints");
+	
+}
 
+function randomURLsFromSource(endpointScript) {
+	// TODO : parse the endpointScript's source and return a list of actionURLs
+	var lines = endpointScript.split("\n");
+	
+}

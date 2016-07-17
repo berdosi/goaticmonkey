@@ -5,8 +5,9 @@ var tabs = require("sdk/tabs");
 var { indexedDB, IDBKeyRange } = require('sdk/indexed-db');
 
 const {Cc, Ci} = require("chrome");
-var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
-                        .getService(Components.interfaces.nsIPromptService); // we will need this to show prompts. To be replaced with a more API SDK way.
+
+// we will need this to show prompts. To be replaced with a more API SDK way.
+var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService); 
 // adding a toolbar button
  var { ToggleButton } = require("sdk/ui/button/toggle"); 
 
@@ -42,7 +43,7 @@ console.log("serversocket initiated",serverSocket);
 
 serverSocket.asyncListen({
 	onSocketAccepted: function(socket, transport) {
-		if ((transport.host === "127.0.0.1") || (transport.host === "0:0:0:0:0:0:0:1") || (transport.host === "::1" )) { // only accept from localhost...
+		if (transport.host === "127.0.0.1" || transport.host === "0:0:0:0:0:0:0:1" || transport.host === "::1" ) { // only accept from localhost...
 			var input = transport.openInputStream(Ci.nsITransport.OPEN_BLOCKING,0,0);
 			var output = transport.openOutputStream(Ci.nsITransport.OPEN_BLOCKING, 0, 0);
 			var tm = Cc["@mozilla.org/thread-manager;1"].getService();
@@ -86,6 +87,24 @@ serverSocket.asyncListen({
 
 /* * END : SOCKLISTEN * */
 
+/* * BEGIN : look for new endpoint's in current tabs * */
+require("sdk/tabs").on("ready", function(tab){
+	if (tab.url.match(/endpoint.js$/)) addEndpoint(tab.window.document.body.innerText);
+});
+
+/**
+ * @name addEndpoint
+ * @description Adds the endpoint to the database (or updates a previous one)
+ * @param source	The source code of the script to be parsed.
+ * @returns null
+ */
+function addEndpoint(source) {
+	// TODO: check for existing version in the database, 
+	// ask for user action, 
+	// ask for user confirmation before adding the script to the database
+	console.log(source); 
+}
+
 
 function processRequest(apiEndPoint, request) {
 	// when a new request arrives, this is going to call the function of apiEndpoint, and pass the requests' data.
@@ -95,14 +114,14 @@ function processRequest(apiEndPoint, request) {
 	// apiEndPoint's callback mustn't be allowed to access the indexedDb (needs to be run in its own scope)
 	// request contains a url property - the place we are to navigate to.
 	
-	getItem(apiEndPoint, function(result) {
-		var keyIncluded = result.allowedKeys.indexOf(result.key) > -1;
-		if (keyIncluded || confirmRequest(apiEndPoint, result.key)) {
+	getItem(apiEndPoint, function(endPointObject) {
+		var keyIncluded = endPointObject.allowedKeys.indexOf(endPointObject.key) > -1;
+		if (keyIncluded || confirmRequest(apiEndPoint, endPointObject.key)) {
 			tabs.open({
 				url: request.url, // TODO: check if the url is among the target URLs
 				onReady: function(tab) {
 					tab.attach({
-						contentScript: e.script, 
+						contentScript: endPointObject.script, 
 						contentScriptOptions: request
 					});
 			}});
@@ -112,6 +131,13 @@ function processRequest(apiEndPoint, request) {
 	});
 }
 
+/**
+ * @name confirmRequest
+ * @description Shows a confirmation request regarding what to do with the incoming API request.
+ * @param apiEndpoint object, the endpoint object to check against / update.
+ * @param apiKey string, the api key to match against.
+ * @returns TRUE if access is granted, FALSE if refused
+ */
 function confirmRequest(apiEndpoint, apiKey) {
 // TODO : show a confirmation dialog explaining the implications.
 // actions: 
@@ -121,7 +147,6 @@ function confirmRequest(apiEndpoint, apiKey) {
 // - deny permanently
 // permanent actions add the api's key to the obejctstore
 // if there are too much requests to be denied with changing api keys, the endpoint should be renamed by the user, and given to the trusted applications.
-
 
 // https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPromptService#select()
 

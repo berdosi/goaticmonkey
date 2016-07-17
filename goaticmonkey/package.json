@@ -16,7 +16,5 @@
   "license": "MIT",
   "keywords": [
     "jetpack"
-  ],
-  "updateURL":"https://raw.githubusercontent.com/numen/hacking-around/master/MANIFEST/goaticmonkey.rdf",
-  "updateLink":"https://github.com/numen/hacking-around/raw/master/xpi/goaticmonkey.xpi"
+  ]
 }

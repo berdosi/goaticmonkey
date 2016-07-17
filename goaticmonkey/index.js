@@ -56,23 +56,23 @@ serverSocket.asyncListen({
 					var request = '';
 					while (sin.available()) request = request + sin.read(5120); 
 					if(request !== null && request.trim() !== "") {
-						var apiEndPoint; // this is going to store the API endpoint we registered using an API script
+						var apiEndpoint; // this is going to store the API endpoint we registered using an API script
 						let urlparams = request.split(" ");
 
 						switch (urlparams[0]) {
 							case "GET":
 								let requestURL = urls.URL("http://example.org" + urlparams[1]);
-								[apiEndPoint, request] = [requestURL.fileName, querystring.parse(requestURL.search.substring(1))];
+								[apiEndpoint, request] = [requestURL.fileName, querystring.parse(requestURL.search.substring(1))];
 								request.method = "GET";
 								break;
 							case "POST":
-								apiEndPoint = urls.URL("http://example.org" + urlparams[1]).fileName;
+								apiEndpoint = urls.URL("http://example.org" + urlparams[1]).fileName;
 								request = querystring.parse(request.split("\n").pop());
 								request.method = "POST";
 								break;
 						}
-						console.log(apiEndPoint, request);
-						processRequest(apiEndPoint, request);
+						console.log(apiEndpoint, request);
+						processRequest(apiEndpoint, request);
 					}
 					sin.close();
 					input.close();
@@ -89,39 +89,33 @@ serverSocket.asyncListen({
 
 /* * BEGIN : look for new endpoint's in current tabs * */
 require("sdk/tabs").on("ready", function(tab){
-	if (tab.url.match(/endpoint.js$/)) addEndpoint(tab.window.document.body.innerText);
+	if (tab.url.match(/endpoint.js$/)) {
+		var worker = tab.attach({contentScript: "self.port.emit('addEndpointMessage', document.body.innerText)"});
+		worker.port.on("addEndpointMessage", addEndpoint)
+	}
+	//if (tab.url.match(/endpoint.js$/)) addEndpoint(tab);
 });
 
-/**
- * @name addEndpoint
- * @description Adds the endpoint to the database (or updates a previous one)
- * @param source	The source code of the script to be parsed.
- * @returns null
- */
-function addEndpoint(source) {
-	// TODO: check for existing version in the database, 
-	// ask for user action, 
-	// ask for user confirmation before adding the script to the database
-	console.log(source); 
-}
 
 
-function processRequest(apiEndPoint, request) {
+
+
+function processRequest(apiEndpoint, request) {
 	// when a new request arrives, this is going to call the function of apiEndpoint, and pass the requests' data.
 	// it needs to check whether the endpoint is enabled, and check, if user confirmation is necessary.
 	// the request should contain a "key" parameter - normally we should only allow to run requests from requestors 
 	// for which the key has been confirmed by the user. The key should be removed from the request before passing it to the endpoint
-	// apiEndPoint's callback mustn't be allowed to access the indexedDb (needs to be run in its own scope)
+	// apiEndpoint's callback mustn't be allowed to access the indexedDb (needs to be run in its own scope)
 	// request contains a url property - the place we are to navigate to.
 	
-	getItem(apiEndPoint, function(endPointObject) {
-		var keyIncluded = endPointObject.allowedKeys.indexOf(endPointObject.key) > -1;
-		if (keyIncluded || confirmRequest(apiEndPoint, endPointObject.key)) {
+	getItem(apiEndpoint, function(endpointObject) {
+		var keyIncluded = endpointObject.allowedKeys.indexOf(endpointObject.key) > -1;
+		if (keyIncluded || confirmRequest(apiEndpoint, endpointObject.key)) {
 			tabs.open({
 				url: request.url, // TODO: check if the url is among the target URLs
 				onReady: function(tab) {
 					tab.attach({
-						contentScript: endPointObject.script, 
+						contentScript: endpointObject.script, 
 						contentScriptOptions: request
 					});
 			}});
@@ -181,23 +175,34 @@ function open(version) {
 }
 
 open(1);
-
+/**
+ * @name addEndpoint
+ * @description Adds the endpoint to the database (or updates a previous one)
+ * @param source	The source code of the script to be parsed.
+ * @returns null
+ */
 function addEndpoint(endpoint) {
+	var header, body;
+	[header, body] = endpoint.split("/*body*/");
+	header = JSON.parse(header);
+	console.log(header, body);
+	if (header.endpointName === undefined || header.allowedURLs === undefined) { console.log("missing data"); return }
 	var db = database.db;
 	var trans = db.transaction(["endpoints"],"readwrite");
 	var store = trans.objectStore("endpoints");
 	var request = store.put({
-		"endpointName": endpoint.endpointName,
+		"endpointName": header.endpointName,
 		"enabled": true,
 		"confirmationRequired": true, // if there is a request, let the user decide if it is to be fulfilled
 		"allowedKeys": [],
 		"deniedKeys": [],
-		"getEnabled": true, // for debugging only . we don't really want malicious links using our endpoints 
+		"getEnabled": true, // TODO: for debugging only . we don't really want malicious links using our endpoints 
 		"postEnabled": true,
 		"invisibleEnabled": false, // not implemented yet : invisible apis will be able to function in the background
-		"script": endpoint.script,
-		"allowedURLs": randomURLsFromSource(endpoint.script)
+		"script": body,
+		"allowedURLs": header.allowedURLs
 		});
+	request.onsuccess = function (e) {console.log("endpoint added", e, request)}
 	request.onerror = database.onerror;
 }
 

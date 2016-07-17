@@ -4,6 +4,9 @@ var urls = require("sdk/url");
 var tabs = require("sdk/tabs");
 var { indexedDB, IDBKeyRange } = require('sdk/indexed-db');
 
+const {Cc, Ci} = require("chrome");
+var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
+                        .getService(Components.interfaces.nsIPromptService); // we will need this to show prompts. To be replaced with a more API SDK way.
 // adding a toolbar button
  var { ToggleButton } = require("sdk/ui/button/toggle"); 
 
@@ -34,7 +37,6 @@ panel.on("show",function(){
 /* * BEGIN : SOCKLISTEN * */
 
 var port = 2051; // This will be the next year of the Metal Goat, which is totally cool.
-const {Cc, Ci} = require("chrome");
 var serverSocket = Cc["@mozilla.org/network/server-socket;1"].createInstance(Ci.nsIServerSocket);
 serverSocket.init(port, true, -1);
 console.log("serversocket initiated",serverSocket)
@@ -100,27 +102,39 @@ function processRequest(apiEndPoint, request) {
 	// for which the key has been confirmed by the user. The key should be removed from the request before passing it to the endpoint
 	// apiEndPoint's callback mustn't be allowed to access the indexedDb (needs to be run in its own scope)
 	// request contains a url property - the place we are to navigate to.
-	request.key = ""; // TODO : check if the key is valid 
-	if (true) { // todo : check for user confirmation, if necessary, and whether the request type is allowed  (in request.method)
-	getItems(function (e) {
-		for (item in endpointList) {
-			if (item.endpointName) {
-				tabs.open({
-					url: request.url, // TODO: check if the url is among the target URLs
-					onReady: function(tab) {
-						tab.attach({
-							contentScript: e.script, 
-							contentScriptOptions: request
-						});
-				}})
-			}
-			
-		}
 	
-	})
-	}
+	getItem(apiEndPoint, function(result) {
+		var allowedKeys = result.allowedKeys.indexOf(result.key) > -1
+		if (keyIncluded || confirmRequest(apiEndpoint, result.key)) {
+			tabs.open({
+				url: request.url, // TODO: check if the url is among the target URLs
+				onReady: function(tab) {
+					tab.attach({
+						contentScript: e.script, 
+						contentScriptOptions: request
+					});
+			}})
+		} else {
+// if the key is not included, and the user didn't confirm, there's nothing to do.
+		}
+	});
 }
-// TODO : callbacks to delete / disable / switchCOnfirmationSTate of endpoints
+
+function confirmRequest(apiEndpoint, apiKey) {
+// TODO : show a confirmation dialog explaining the implications.
+// actions: 
+// - allow now
+// - allow and store key for permanent use
+// - deny now
+// - deny permanently
+// permanent actions add the api's key to the obejctstore
+// if there are too much requests to be denied with changing api keys, the endpoint should be renamed by the user, and given to the trusted applications.
+
+
+// https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPromptService#select()
+
+	return true;
+}
 
 
 /////////////////////////////
@@ -160,6 +174,7 @@ function addEndpoint(endpoint) {
 		"enabled": true,
 		"confirmationRequired": true, // if there is a request, let the user decide if it is to be fulfilled
 		"allowedKeys": [],
+		"deniedKeys": [],
 		"getEnabled": true, // for debugging only . we don't really want malicious links using our endpoints 
 		"postEnabled": true,
 		"invisibleEnabled": false, // not implemented yet : invisible apis will be able to function in the background
@@ -192,11 +207,14 @@ function getItems(callback) {
 function getItem(item, callback) {
 	var trans = database.db.transaction(["endpoints"]);
 	var store = trans.objectStore("endpoints");
-	
+	var request = store.get("item")
+	request.onsuccess = function(event){ callback(request.result) }
 }
 
 function randomURLsFromSource(endpointScript) {
 	// TODO : parse the endpointScript's source and return a list of actionURLs
 	var lines = endpointScript.split("\n");
-	
+	for (var line in lines) {
+		// if the line contains targetURL, then add it. if it is end of header, return the array.
+	}
 }

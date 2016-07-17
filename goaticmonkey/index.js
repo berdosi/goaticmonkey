@@ -16,9 +16,9 @@ var button = ToggleButton({
 	label: "GoaticMonkey",
 	icon: "./goaticon.svg",
 	onClick: function(state) {
-		if (state.checked) panel.show({ position: button })
+		if (state.checked) panel.show({ position: button });
 	}
-})
+});
 
 /* define the panel for the addon*/
 var panel = require("sdk/panel").Panel({
@@ -27,10 +27,9 @@ var panel = require("sdk/panel").Panel({
   onHide: function() {
 		button.state('window', {checked: false});}
 });
-//panel.on("show",function(){panel.port.emit("endpointList",endpointList())});
 
 panel.on("show",function(){
-	getItems(function(e){panel.port.emit("endpointList", e)})});
+	getItems(function(e){panel.port.emit("endpointList", e);});});
 
 /* * END : BROWSER UI * */
 	
@@ -39,11 +38,11 @@ panel.on("show",function(){
 var port = 2051; // This will be the next year of the Metal Goat, which is totally cool.
 var serverSocket = Cc["@mozilla.org/network/server-socket;1"].createInstance(Ci.nsIServerSocket);
 serverSocket.init(port, true, -1);
-console.log("serversocket initiated",serverSocket)
+console.log("serversocket initiated",serverSocket);
 
 serverSocket.asyncListen({
 	onSocketAccepted: function(socket, transport) {
-		if ((transport.host == "127.0.0.1") || (transport.host == "0:0:0:0:0:0:0:1") || (transport.host == "::1" )) { // only accept from localhost...
+		if ((transport.host === "127.0.0.1") || (transport.host === "0:0:0:0:0:0:0:1") || (transport.host === "::1" )) { // only accept from localhost...
 			var input = transport.openInputStream(Ci.nsITransport.OPEN_BLOCKING,0,0);
 			var output = transport.openOutputStream(Ci.nsITransport.OPEN_BLOCKING, 0, 0);
 			var tm = Cc["@mozilla.org/thread-manager;1"].getService();
@@ -55,21 +54,20 @@ serverSocket.asyncListen({
 
 					var request = '';
 					while (sin.available()) request = request + sin.read(5120); 
-					var reqObj = { type: null, info: [] };
-					if(request != null && request.trim() != "") {
-						var apiEndPoint, requestParams; // this is going to store the API endpoint we registered using an API script
+					if(request !== null && request.trim() !== "") {
+						var apiEndPoint; // this is going to store the API endpoint we registered using an API script
 						let urlparams = request.split(" ");
 
 						switch (urlparams[0]) {
 							case "GET":
 								let requestURL = urls.URL("http://example.org" + urlparams[1]);
 								[apiEndPoint, request] = [requestURL.fileName, querystring.parse(requestURL.search.substring(1))];
-								request.method = "GET"
+								request.method = "GET";
 								break;
 							case "POST":
 								apiEndPoint = urls.URL("http://example.org" + urlparams[1]).fileName;
-								request = querystring.parse(request.split("\n").pop())
-								request.method = "POST"
+								request = querystring.parse(request.split("\n").pop());
+								request.method = "POST";
 								break;
 						}
 						console.log(apiEndPoint, request);
@@ -88,12 +86,6 @@ serverSocket.asyncListen({
 
 /* * END : SOCKLISTEN * */
 
-function endpointList() {
-	// this function is going to list the current state of installed APIs, and returns it (the settingspanel's content script will receive it)
-	// an API has : name, enabledState, userConfirmationNeededState
-	return "placeholder"
-
-}
 
 function processRequest(apiEndPoint, request) {
 	// when a new request arrives, this is going to call the function of apiEndpoint, and pass the requests' data.
@@ -104,8 +96,8 @@ function processRequest(apiEndPoint, request) {
 	// request contains a url property - the place we are to navigate to.
 	
 	getItem(apiEndPoint, function(result) {
-		var allowedKeys = result.allowedKeys.indexOf(result.key) > -1
-		if (keyIncluded || confirmRequest(apiEndpoint, result.key)) {
+		var keyIncluded = result.allowedKeys.indexOf(result.key) > -1;
+		if (keyIncluded || confirmRequest(apiEndPoint, result.key)) {
 			tabs.open({
 				url: request.url, // TODO: check if the url is among the target URLs
 				onReady: function(tab) {
@@ -113,7 +105,7 @@ function processRequest(apiEndPoint, request) {
 						contentScript: e.script, 
 						contentScriptOptions: request
 					});
-			}})
+			}});
 		} else {
 // if the key is not included, and the user didn't confirm, there's nothing to do.
 		}
@@ -144,7 +136,7 @@ function confirmRequest(apiEndpoint, apiKey) {
 
 var database = {};
 
-database.onerror = function(e) { console.error(e.value) }
+database.onerror = function(e) { console.error(e.value); };
 
 function open(version) {
 	var request = indexedDB.open("endpointDb", version);
@@ -155,10 +147,10 @@ function open(version) {
 				db.deleteObjectStore("endpoints");	
 				// TODO : the database schema should be updated with 
 				// default values instead of, well, burning up it all. 
-		var store = db.createObjectStore("endpoints", {keyPath: "endpointName"});
+		db.createObjectStore("endpoints", {keyPath: "endpointName"});
 	};
 
-	request.onsuccess = function (e) { database.db = e.target.result; }
+	request.onsuccess = function (e) { database.db = e.target.result; };
 
 	request.onerror = database.onerror;
 }
@@ -194,27 +186,28 @@ function getItems(callback) {
 
 	cursorRequest.onsuccess = function(e) {
 		var result = e.target.result;
-		if (!!result == false) return;
+		if (!!result === false) return;
 
 		items.push(result);
 		result.continue();
-	}
+	};
 	cursorRequest.onerror = database.onerror;
 
-	trans.oncomplete = function() { callback(items); }
+	trans.oncomplete = function() { callback(items); };
 }
 
 function getItem(item, callback) {
 	var trans = database.db.transaction(["endpoints"]);
 	var store = trans.objectStore("endpoints");
-	var request = store.get("item")
-	request.onsuccess = function(event){ callback(request.result) }
+	var request = store.get(item);
+	request.onsuccess = function(event){ callback(request.result); };
 }
 
 function randomURLsFromSource(endpointScript) {
 	// TODO : parse the endpointScript's source and return a list of actionURLs
-	var lines = endpointScript.split("\n");
+	var lines = endpointScript.split("\n"), returnValues = [];
 	for (var line in lines) {
 		// if the line contains targetURL, then add it. if it is end of header, return the array.
+		if (line.indexOf("@targetURL") !== -1) returnValues.push(line.replace(/.*URL +/,""));
 	}
 }

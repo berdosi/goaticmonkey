@@ -97,9 +97,13 @@ require("sdk/tabs").on("ready", function(tab){
 });
 
 
-
-
-
+/**
+ * @name processRequest
+ * @description Processes a request: checks for authorization, then executes it.
+ * @param apiEndpoint {String} The name of the endpoint called by the request.
+ * @param request {Object} The unsanitized data passed to the endpoint.
+ * @returns Nothing.
+ */
 function processRequest(apiEndpoint, request) {
 	// when a new request arrives, this is going to call the function of apiEndpoint, and pass the requests' data.
 	// it needs to check whether the endpoint is enabled, and check, if user confirmation is necessary.
@@ -128,9 +132,9 @@ function processRequest(apiEndpoint, request) {
 /**
  * @name confirmRequest
  * @description Shows a confirmation request regarding what to do with the incoming API request.
- * @param apiEndpoint object, the endpoint object to check against / update.
- * @param apiKey string, the api key to match against.
- * @returns TRUE if access is granted, FALSE if refused
+ * @param apiEndpoint {Object} object, the endpoint object to check against / update.
+ * @param apiKey {String} the api key to match against.
+ * @returns {Boolean} TRUE if access is granted, FALSE if refused
  */
 function confirmRequest(apiEndpoint, apiKey) {
 // TODO : show a confirmation dialog explaining the implications.
@@ -178,7 +182,7 @@ open(1);
 /**
  * @name addEndpoint
  * @description Adds the endpoint to the database (or updates a previous one)
- * @param source	The source code of the script to be parsed.
+ * @param endpoint {String}	The source code of the script to be parsed.
  * @returns null
  */
 function addEndpoint(endpoint) {
@@ -231,13 +235,4 @@ function getItem(item, callback) {
 	var store = trans.objectStore("endpoints");
 	var request = store.get(item);
 	request.onsuccess = function(event){ callback(request.result); };
-}
-
-function randomURLsFromSource(endpointScript) {
-	// TODO : parse the endpointScript's source and return a list of actionURLs
-	var lines = endpointScript.split("\n"), returnValues = [];
-	for (var line in lines) {
-		// if the line contains targetURL, then add it. if it is end of header, return the array.
-		if (line.indexOf("@targetURL") !== -1) returnValues.push(line.replace(/.*URL +/,""));
-	}
 }

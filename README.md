@@ -4,6 +4,8 @@ Firefox extension providing an HTTP-based API. Users are able to install endpoin
 
 *Please note, only install endpoint scripts from trusted sources : ignoring to do so may open the browser to vulnerabilities.*
 
+You can build the extension from the `goaticmonkey/` directory using `jpm xpi`
+
 Sample
 ------
 Sample endpoints for Goaticmonkey.

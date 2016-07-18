@@ -104,6 +104,13 @@ require("sdk/tabs").on("ready", function(tab){
  * @param request {Object} The unsanitized data passed to the endpoint.
  * @returns Nothing.
  */
+/**
+ * @name processRequest
+ * @description description
+ * @param apiEndpoint
+ * @param request
+ * @returns returns
+ */
 function processRequest(apiEndpoint, request) {
 	// when a new request arrives, this is going to call the function of apiEndpoint, and pass the requests' data.
 	// it needs to check whether the endpoint is enabled, and check, if user confirmation is necessary.
@@ -113,10 +120,10 @@ function processRequest(apiEndpoint, request) {
 	// request contains a url property - the place we are to navigate to.
 	
 	getItem(apiEndpoint, function(endpointObject) {
-		var keyIncluded = endpointObject.allowedKeys.indexOf(endpointObject.key) > -1;
-		if (keyIncluded || confirmRequest(apiEndpoint, endpointObject.key)) {
-			tabs.open({
-				url: request.url, // TODO: check if the url is among the target URLs
+		var keyIncluded = endpointObject.allowedKeys.indexOf(request.key) > -1;
+		if (keyIncluded || confirmRequest(apiEndpoint, request.key)) {
+			if (checkURL(request.URL, apiEndpoint.allowedURLs)) tabs.open({
+				url: request.url,
 				onReady: function(tab) {
 					tab.attach({
 						contentScript: endpointObject.script, 
@@ -127,6 +134,18 @@ function processRequest(apiEndpoint, request) {
 // if the key is not included, and the user didn't confirm, there's nothing to do.
 		}
 	});
+}
+
+/**
+ * @name checkURL
+ * @description Checks whether the request should be allowed based on an URL and a list of patterns
+ * @param requestURL {String} The URL the request is targeting.
+ * @param allowedURLs {Array} A list of URL patters to match against
+ * @returns returns {Boolean} true if the request should be allowed based on it's target URL
+ */
+function checkURL(requestURL, allowedURLs) {
+	// TODO to be implemented
+	return true;
 }
 
 /**

@@ -1,3 +1,4 @@
+/*eslint-env node */
 var self = require("sdk/self");
 var querystring = require("sdk/querystring");
 var urls = require("sdk/url");
@@ -207,9 +208,10 @@ open(1);
 function addEndpoint(endpoint) {
 	var header, body;
 	[header, body] = endpoint.split("/*body*/");
-	header = JSON.parse(header);
+	header = JSON.parse(header.replace(/^[a-z]+ ?= ?/,"").replace(/;$/,"")); 
+	// allowing metadata to be assigned to a variable (thus making the script a valid javascript)
 	console.log(header, body);
-	if (header.endpointName === undefined || header.allowedURLs === undefined) { console.log("missing data"); return }
+	if (header.endpointName === undefined || header.allowedURLs === undefined) { console.log("missing data"); return; }
 	var db = database.db;
 	var trans = db.transaction(["endpoints"],"readwrite");
 	var store = trans.objectStore("endpoints");
@@ -222,6 +224,7 @@ function addEndpoint(endpoint) {
 		"getEnabled": true, // TODO: for debugging only . we don't really want malicious links using our endpoints 
 		"postEnabled": true,
 		"invisibleEnabled": false, // not implemented yet : invisible apis will be able to function in the background
+		"description": header.description ? header.description : "No description provided", 
 		"script": body,
 		"allowedURLs": header.allowedURLs
 		});

@@ -7,8 +7,8 @@ var { indexedDB, IDBKeyRange } = require('sdk/indexed-db');
 
 const {Cc, Ci} = require("chrome");
 
-// we will need this to show prompts. To be replaced with a more API SDK way.
-var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService); 
+// we may need this to show prompts. To be replaced with a more API SDK way.
+// var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService); 
 // adding a toolbar button
  var { ToggleButton } = require("sdk/ui/button/toggle"); 
 
@@ -92,7 +92,7 @@ serverSocket.asyncListen({
 require("sdk/tabs").on("ready", function(tab){
 	if (tab.url.match(/endpoint.js$/)) {
 		var worker = tab.attach({contentScript: "self.port.emit('addEndpointMessage', document.body.innerText)"});
-		worker.port.on("addEndpointMessage", addEndpoint)
+		worker.port.on("addEndpointMessage", addEndpoint);
 	}
 	//if (tab.url.match(/endpoint.js$/)) addEndpoint(tab);
 });
@@ -228,7 +228,7 @@ function addEndpoint(endpoint) {
 		"script": body,
 		"allowedURLs": header.allowedURLs
 		});
-	request.onsuccess = function (e) {console.log("endpoint added", e, request)}
+	request.onsuccess = function (e) {console.log("endpoint added", e, request);};
 	request.onerror = database.onerror;
 }
 
@@ -256,5 +256,8 @@ function getItem(item, callback) {
 	var trans = database.db.transaction(["endpoints"]);
 	var store = trans.objectStore("endpoints");
 	var request = store.get(item);
+	/**
+	 * @callback The function processing the result.
+	 */
 	request.onsuccess = function(event){ callback(request.result); };
 }

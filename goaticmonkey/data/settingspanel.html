@@ -1,4 +1,55 @@
 <!doctype html>
-<body>
-<span>hello</span>
+<html>
+	<head>
+		<meta charset="utf-8">
+
+		<style type="text/css">
+			* {
+				font-family: sans-serif;	
+			}
+			#list, #content {
+				display: table-cell;
+				font-size: small;
+			}
+			#list {
+				width: 10em;
+				background-color: Window;
+				margin : 0;
+				padding: 0;
+			}
+			#list a {
+				display: block;
+				clear: right;
+				text-decoration: none;
+				padding: .5em .5em;
+				color: MenuText;
+			}
+			#list a:hover {
+				background-color: Highlight;
+				color: HighlightText;
+			}
+			#list .selected {
+				font-weight: bold;
+			}
+			#content {
+				width: 30em;
+				background-color: Menu;
+				padding: 1em;
+			}
+		</style>
+	</head>
+	
+	<body>
+		<div id="list">
+			<a href="#options" class="selected">Options</a>
+			<a href="#logs">Logs</a>
+			<hr>
+			<a href="#item1">item 1</a>
+			<a href="#item2">item 2</a>
+			
+		</div>
+		<div id="content">
+		This is the place for the content.
+		</div>
 </body>
+</html>

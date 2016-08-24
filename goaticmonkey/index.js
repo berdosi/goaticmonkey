@@ -38,6 +38,14 @@ var panel = require("sdk/panel").Panel({
 panel.on("show",function(){
 	getItems(function(e){console.log(e);panel.port.emit("endpointList", e);});});
 
+var confirmpanel = require("sdk/panel").Panel({
+	width: 400,
+	height: 300,
+	contentURL: self.data.url("./confirmpanel.html"),
+	contentScriptFile: self.data.url("./confirmpanel.js"),
+	onHide: function() {
+		button.state("window", {checked: false});}
+});
 /* * END : BROWSER UI * */
 	
 /* * BEGIN : SOCKLISTEN * */
@@ -97,6 +105,7 @@ serverSocket.asyncListen({
 /* * BEGIN : look for new endpoint's in current tabs * */
 require("sdk/tabs").on("ready", function(tab){
 	if (tab.url.match(/endpoint.js$/)) {
+		confirmpanel.show({ position: button });
 		var worker = tab.attach({
 			contentScript: "self.port.emit('addEndpointMessage', document.body.innerText)"});
 		worker.port.on("addEndpointMessage", addEndpoint);

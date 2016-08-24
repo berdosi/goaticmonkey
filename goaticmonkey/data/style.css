@@ -1,0 +1,41 @@
+* {
+    font-family: sans-serif;	
+}
+body {
+    display: table;
+    font-size: small;
+}
+#container {
+    display: table-row;
+}
+#list, #content {
+    display: table-cell;
+}
+#list {
+    background-color: HighlightText;
+    margin : 0;
+    padding: 0;
+    overflow-x: scroll;
+}
+#list a {
+    display: block;
+    clear: right;
+    text-decoration: none;
+    width: 8em;
+    text-overflow: ellipsis;
+    padding: .5em .5em;
+    color: ButtonText;
+}
+#list a:hover {
+    background-color: Highlight;
+    color: HighlightText;
+}
+#list .selected {
+    font-weight: bold;
+}
+#content {
+    display: table-cell;
+    width: 40em;
+    background-color: Window;
+    padding: 1em;
+}

@@ -3,9 +3,12 @@ var self = require("sdk/self");
 var querystring = require("sdk/querystring");
 var urls = require("sdk/url");
 var tabs = require("sdk/tabs");
-var { indexedDB, IDBKeyRange } = require('sdk/indexed-db');
+var { indexedDB, IDBKeyRange } = require("sdk/indexed-db");
 
 const {Cc, Ci} = require("chrome");
+
+/* eslint-disable no-console, no-unused-vars */
+/* eslint-env browser */
 
 // we may need this to show prompts. To be replaced with a more API SDK way.
 // var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService); 
@@ -24,14 +27,16 @@ var button = ToggleButton({
 
 /* define the panel for the addon*/
 var panel = require("sdk/panel").Panel({
-  contentURL: self.data.url("./settingspanel.html"),
-  contentScriptFile: self.data.url("./settingspanel.js"),
-  onHide: function() {
-		button.state('window', {checked: false});}
+	width: 400,
+	height: 300,
+	contentURL: self.data.url("./settingspanel.html"),
+	contentScriptFile: self.data.url("./settingspanel.js"),
+	onHide: function() {
+		button.state("window", {checked: false});}
 });
 
 panel.on("show",function(){
-	getItems(function(e){panel.port.emit("endpointList", e);});});
+	getItems(function(e){console.log(e);panel.port.emit("endpointList", e);});});
 
 /* * END : BROWSER UI * */
 	
@@ -40,6 +45,7 @@ panel.on("show",function(){
 var port = 2051; // This will be the next year of the Metal Goat, which is totally cool.
 var serverSocket = Cc["@mozilla.org/network/server-socket;1"].createInstance(Ci.nsIServerSocket);
 serverSocket.init(port, true, -1);
+
 console.log("serversocket initiated",serverSocket);
 
 serverSocket.asyncListen({
@@ -54,23 +60,23 @@ serverSocket.asyncListen({
 					sin.init(inp);
 					sin.available();
 
-					var request = '';
+					var request = "";
 					while (sin.available()) request = request + sin.read(5120); 
 					if(request !== null && request.trim() !== "") {
 						var apiEndpoint; // this is going to store the API endpoint we registered using an API script
 						let urlparams = request.split(" ");
 
 						switch (urlparams[0]) {
-							case "GET":
-								let requestURL = urls.URL("http://example.org" + urlparams[1]);
-								[apiEndpoint, request] = [requestURL.fileName, querystring.parse(requestURL.search.substring(1))];
-								request.method = "GET";
-								break;
-							case "POST":
-								apiEndpoint = urls.URL("http://example.org" + urlparams[1]).fileName;
-								request = querystring.parse(request.split("\n").pop());
-								request.method = "POST";
-								break;
+						case "GET":
+							var requestURL = urls.URL("http://example.org" + urlparams[1]);
+							[apiEndpoint, request] = [requestURL.fileName, querystring.parse(requestURL.search.substring(1))];
+							request.method = "GET";
+							break;
+						case "POST":
+							apiEndpoint = urls.URL("http://example.org" + urlparams[1]).fileName;
+							request = querystring.parse(request.split("\n").pop());
+							request.method = "POST";
+							break;
 						}
 						console.log(apiEndpoint, request);
 						processRequest(apiEndpoint, request);
@@ -91,7 +97,8 @@ serverSocket.asyncListen({
 /* * BEGIN : look for new endpoint's in current tabs * */
 require("sdk/tabs").on("ready", function(tab){
 	if (tab.url.match(/endpoint.js$/)) {
-		var worker = tab.attach({contentScript: "self.port.emit('addEndpointMessage', document.body.innerText)"});
+		var worker = tab.attach({
+			contentScript: "self.port.emit('addEndpointMessage', document.body.innerText)"});
 		worker.port.on("addEndpointMessage", addEndpoint);
 	}
 	//if (tab.url.match(/endpoint.js$/)) addEndpoint(tab);
@@ -105,16 +112,9 @@ require("sdk/tabs").on("ready", function(tab){
  * @param request {Object} The unsanitized data passed to the endpoint.
  * @returns Nothing.
  */
-/**
- * @name processRequest
- * @description description
- * @param apiEndpoint
- * @param request
- * @returns returns
- */
 function processRequest(apiEndpoint, request) {
 	// when a new request arrives, this is going to call the function of apiEndpoint, and pass the requests' data.
-	// it needs to check whether the endpoint is enabled, and check, if user confirmation is necessary.
+	// it needs  is the place for the content. to check whether the endpoint is enabled, and check, if user confirmation is necessary.
 	// the request should contain a "key" parameter - normally we should only allow to run requests from requestors 
 	// for which the key has been confirmed by the user. The key should be removed from the request before passing it to the endpoint
 	// apiEndpoint's callback mustn't be allowed to access the indexedDb (needs to be run in its own scope)
@@ -130,7 +130,7 @@ function processRequest(apiEndpoint, request) {
 						contentScript: endpointObject.script, 
 						contentScriptOptions: request
 					});
-			}});
+				}});
 		} else {
 // if the key is not included, and the user didn't confirm, there's nothing to do.
 		}
@@ -169,7 +169,7 @@ function confirmRequest(apiEndpoint, apiKey) {
 // https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPromptService#select()
 
 	return true;
-}
+}	
 
 
 /////////////////////////////
@@ -187,7 +187,7 @@ function open(version) {
 		var db = e.target.result;
 		e.target.transaction.onerror = database.onerror;
 		if (db.objectStoreNames.contains("endpoints")) 
-				db.deleteObjectStore("endpoints");	
+			db.deleteObjectStore("endpoints");	
 				// TODO : the database schema should be updated with 
 				// default values instead of, well, burning up it all. 
 		db.createObjectStore("endpoints", {keyPath: "endpointName"});
@@ -206,15 +206,21 @@ open(1);
  * @returns null
  */
 function addEndpoint(endpoint) {
+	/** @type {string} */
 	var header, body;
 	[header, body] = endpoint.split("/*body*/");
-	header = JSON.parse(header.replace(/^[a-z]+ ?= ?/,"").replace(/;$/,"")); 
+	console.log(header.replace(/^[a-z]+ ?= ?/,"").replace(/\}[^}]*$/,"}"));
+	header = JSON.parse(header.replace(/^[a-z]+ ?= ?/,"").replace(/\}[^}]*$/,"}")); 
 	// allowing metadata to be assigned to a variable (thus making the script a valid javascript)
 	console.log(header, body);
 	if (header.endpointName === undefined || header.allowedURLs === undefined) { console.log("missing data"); return; }
+	/** @type {IDBDatabase} */
 	var db = database.db;
+	/** @type {IDBTransaction} */
 	var trans = db.transaction(["endpoints"],"readwrite");
+	/** @type {IDBObjectStore} */
 	var store = trans.objectStore("endpoints");
+	/** @type {IDBRequest} */
 	var request = store.put({
 		"endpointName": header.endpointName,
 		"enabled": true,
@@ -227,7 +233,7 @@ function addEndpoint(endpoint) {
 		"description": header.description ? header.description : "No description provided", 
 		"script": body,
 		"allowedURLs": header.allowedURLs
-		});
+	});
 	request.onsuccess = function (e) {console.log("endpoint added", e, request);};
 	request.onerror = database.onerror;
 }
@@ -238,13 +244,14 @@ function getItems(callback) {
 	var items = new Array();
 
 	var keyRange = IDBKeyRange.lowerBound(0);
+	/** @type {IDBCursor} */
 	var cursorRequest = store.openCursor(keyRange);
 
 	cursorRequest.onsuccess = function(e) {
 		var result = e.target.result;
 		if (!!result === false) return;
 
-		items.push(result);
+		items.push(result.value);
 		result.continue();
 	};
 	cursorRequest.onerror = database.onerror;
